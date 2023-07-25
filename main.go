@@ -26,7 +26,13 @@ const (
 	BinaryHeader        = "binary:"
 )
 
-type MetaData struct {
+// result can be ->
+// 1- time series, a single time array with value arrays
+// 2- an array of (1)
+// 3- frequency analysis
+// 4- OPERATION POINT
+
+type Headers struct {
 	Title             string
 	Date              time.Time
 	PlotName          string
@@ -38,12 +44,12 @@ type MetaData struct {
 	Flags             string
 }
 
-var metadata MetaData
+var metadata Headers
 
 const layout = "Date: Mon Jan 2 15:04:05 2006"
 
 func main() {
-	file, err := os.Open("rc.raw")
+	file, err := os.Open("iter.raw")
 
 	if err != nil {
 		panic(err)
@@ -63,22 +69,34 @@ func main() {
 
 	t := make([]float64, metadata.NumDataPoints)
 
-	timeBuffer := make([]byte, 8)
-	varBuffer := make([]byte, 4)
-	for dataPoint := 0; dataPoint < metadata.NumDataPoints; dataPoint++ {
-		_, err := io.ReadFull(reader, timeBuffer)
-		t[dataPoint] = toFloat(timeBuffer)
-		if err != nil {
-			panic(err)
-		}
-
-		for v := 0; v < metadata.NumberOfVariables-1; v++ {
-			_, err = io.ReadFull(reader, varBuffer)
+out:
+	for {
+		timeBuffer := make([]byte, 8)
+		varBuffer := make([]byte, 4)
+		for dataPoint := 0; dataPoint < metadata.NumDataPoints; dataPoint++ {
+			_, err := io.ReadFull(reader, timeBuffer)
+			t[dataPoint] = toFloat(timeBuffer)
 			if err != nil {
+				if err == io.EOF {
+					fmt.Println("Reached end of file")
+					break out
+				}
 				panic(err)
+			}
+
+			for v := 0; v < metadata.NumberOfVariables-1; v++ {
+				_, err = io.ReadFull(reader, varBuffer)
+				if err != nil {
+					if err == io.EOF {
+						fmt.Println("Reached end of file")
+						break
+					}
+					panic(err)
+				}
 			}
 		}
 	}
+	println(len(t))
 }
 
 func toFloat(bytes []byte) float64 {
@@ -86,7 +104,8 @@ func toFloat(bytes []byte) float64 {
 	float := math.Float64frombits(bits)
 	return float
 }
-func parseHeaderLine(r io.Reader, metadata *MetaData, line string) {
+func parseHeaderLine(r io.Reader, metadata *Headers, line string) {
+	fmt.Println(line)
 	lineType := strings.SplitN(line, ":", 2)[0]
 	switch lineType {
 
@@ -138,6 +157,7 @@ func parseHeaderLine(r io.Reader, metadata *MetaData, line string) {
 		}
 		for i := 0; i < metadata.NumberOfVariables; i++ {
 			fields := strings.Fields(readLineUTF16(r))
+			fmt.Println(fields)
 			if len(fields) < 3 {
 				panic("Failed to parse variable")
 			}
