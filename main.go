@@ -1,15 +1,13 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/theadell/ltspice-go/ltspice"
 )
 
 func main() {
-	m, err := ltspice.Parse("iter.raw")
+	_, err := ltspice.Parse("rc.raw")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(m)
+	//fmt.Println(m)
 }

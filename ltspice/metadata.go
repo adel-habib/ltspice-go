@@ -15,7 +15,7 @@ type RawFileMetadata struct {
 	NoPoints     int
 	Offset       float64
 	Command      string
-	Variables    []string
+	Variables    []Variable
 	BinaryOffset int
 }
 
@@ -32,8 +32,8 @@ func (rfm RawFileMetadata) String() string {
 	builder.WriteString(fmt.Sprintf("Command: %s\n", rfm.Command))
 
 	builder.WriteString("Variables:\n")
-	for i, v := range rfm.Variables {
-		builder.WriteString(fmt.Sprintf("\t%d\t%s\n", i, v))
+	for _, v := range rfm.Variables {
+		builder.WriteString(fmt.Sprintf("\t%d\t%s\n", v.Order, v))
 	}
 
 	return builder.String()

@@ -48,7 +48,7 @@ func (s SimulationType) String() string {
 
 func SimulationTypeFromString(str string) (SimulationType, error) {
 	switch str {
-	case "Operation Point":
+	case "Operating Point":
 		return OperationPoint, nil
 	case "DC transfer characteristic":
 		return DCtransfer, nil
@@ -103,7 +103,7 @@ func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error 
 	case HeaderPoints:
 		num, err := strconv.Atoi(parseLine(line))
 		if err != nil {
-			fmt.Println("Error converting string to integer:", err)
+			log.Println("Error converting string to integer:", err)
 			return fmt.Errorf("%w: %s", ErrInvalidSimulationHeader, "failed to parse the number of data points from the header")
 		}
 		metadata.NoPoints = num
@@ -111,7 +111,7 @@ func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error 
 	case HeaderVariablesNumber:
 		num, err := strconv.Atoi(parseLine(line))
 		if err != nil {
-			fmt.Println("Error converting string to integer:", err)
+			log.Println("Error converting string to integer:", err)
 			return fmt.Errorf("%w: %s", ErrInvalidSimulationHeader, "failed to parse the number of variables from the header")
 		}
 		metadata.NoVariables = num
@@ -129,14 +129,18 @@ func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error 
 			if len(fields) < 3 {
 				return fmt.Errorf("%w: failed to parse variable, expected 3 fields but found %d, line: %s", ErrInvalidSimulationHeader, len(fields), l)
 			}
-			metadata.Variables = append(metadata.Variables, fields[1])
+			if fields[2] == "time" {
+				fmt.Println("time")
+			}
+			v := Variable{Order: i, Name: fields[1], Typ: fields[2], Size: 4}
+			metadata.Variables = append(metadata.Variables, v)
 		}
 	case HeaderFlags:
 		flagStr := parseLine(line)
 		metadata.Flags = ParseFlags(strings.Fields(flagStr)...)
 
 	default:
-		log.Println("Encountered unknown header: " + line)
+		log.Println("Encountered unknown header: " + lineType)
 
 	}
 	return nil

@@ -1,0 +1,7 @@
+* Z:\home\ahmed\wine\ltspice\op.asc
+V1 N001 0 10
+R1 N001 v_out 1k
+R2 v_out 0 1k
+.op
+.backanno
+.end
