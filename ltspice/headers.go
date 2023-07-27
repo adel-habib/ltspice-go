@@ -129,10 +129,11 @@ func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error 
 			if len(fields) < 3 {
 				return fmt.Errorf("%w: failed to parse variable, expected 3 fields but found %d, line: %s", ErrInvalidSimulationHeader, len(fields), l)
 			}
-			if fields[2] == "time" {
-				fmt.Println("time")
+			sz := 4
+			if fields[2] == "time" || i == 0 {
+				sz = 8
 			}
-			v := Variable{Order: i, Name: fields[1], Typ: fields[2], Size: 4}
+			v := Variable{Order: i, Name: fields[1], Typ: fields[2], Size: sz}
 			metadata.Variables = append(metadata.Variables, v)
 		}
 	case HeaderFlags:

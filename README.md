@@ -5,7 +5,7 @@ Ltspice parser for Go
 
 - [ ] Core Features
     - [x] Parse LTSpice raw file metadata
-    - [ ] Parse LTSpice raw file binary data
+    - [x] Parse LTSpice raw file binary data
     - [ ] Write LTSpice raw file metadata
     - [ ] Write LTSpice raw file binary data
 
@@ -29,7 +29,8 @@ Ltspice parser for Go
     - [ ] AC Analysis
         - [ ] TODO: Add specific features related to AC Analysis simulation
     - [ ] Transient Analysis
-        - [ ] TODO: Add specific features related to Transient Analysis simulation
+        - [x] Parse binary data for unstepped simulations
+        - [ ] Parse binary data for stepped simulations
     - [ ] Noise Spectral Density - (V/Hz½ or A/Hz½)
         - [ ] TODO: Add specific features related to Noise Spectral Density simulation
     - [ ] Transfer Function

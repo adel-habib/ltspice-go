@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"os"
 	"strings"
 	"unicode/utf16"
@@ -46,7 +45,6 @@ func readLineUTF16(r io.Reader) (string, error) {
 		}
 
 		if rune == '\n' {
-			fmt.Println(string(utf16.Decode(lineBuff)))
 			return string(utf16.Decode(lineBuff)), nil
 		}
 
@@ -73,27 +71,26 @@ func parseHeaders(reader io.Reader) (*RawFileMetadata, error) {
 }
 
 func parseBinaryData(reader io.Reader, meta *RawFileMetadata) error {
-	// data := make([][]float64, meta.NoVariables)
+	data := make(map[string][]float64)
+	for _, v := range meta.Variables {
+		data[v.Name] = make([]float64, meta.NoPoints)
+	}
 	for i := 0; i < meta.NoPoints; i++ {
-		for j := 0; j < meta.NoVariables; j++ {
-			v := meta.Variables[j]
-			buffer := make([]byte, v.Size)
-			n, err := io.ReadFull(reader, buffer)
+		for _, v := range meta.Variables {
+			buff := make([]byte, v.Size)
+			_, err := io.ReadFull(reader, buff)
 			if err != nil {
+				fmt.Println(err.Error())
 				return err
-
 			}
+			var val float64
 			if v.Size == 4 {
-				bits := binary.LittleEndian.Uint32(buffer)
-				float := math.Float32frombits(bits)
-				fmt.Printf("%f\n", float)
+				val = toFloatFrom32(buff)
 			} else {
-				float := toFloat(buffer)
-				fmt.Printf("%f\n", float)
+				val = toFloat(buff)
 			}
-
+			data[v.Name][i] = val
 		}
 	}
-
 	return nil
 }

@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	_, err := ltspice.Parse("rc.raw")
+	_, err := ltspice.Parse("dc-sweep.raw")
 	if err != nil {
 		panic(err)
 	}
