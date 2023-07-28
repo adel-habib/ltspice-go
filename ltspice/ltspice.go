@@ -11,7 +11,12 @@ import (
 	"unicode/utf16"
 )
 
-func Parse(fileName string) (*RawFileMetadata, error) {
+type Simulation struct {
+	MetaData *RawFileMetadata
+	Data     map[string][]float64
+}
+
+func Parse(fileName string) (*Simulation, error) {
 	file, err := os.Open(fileName)
 	if err != nil {
 		return nil, err
@@ -22,8 +27,15 @@ func Parse(fileName string) (*RawFileMetadata, error) {
 	if err != nil {
 		return nil, err
 	}
-	parseBinaryData(reader, meta)
-	return meta, nil
+	data, err := parseBinaryData(reader, meta)
+	if err != nil {
+		return nil, err
+	}
+	sim := &Simulation{
+		MetaData: meta,
+		Data:     data,
+	}
+	return sim, nil
 }
 
 func readLineUTF16(r io.Reader) (string, error) {
@@ -70,7 +82,7 @@ func parseHeaders(reader io.Reader) (*RawFileMetadata, error) {
 	return metadata, nil
 }
 
-func parseBinaryData(reader io.Reader, meta *RawFileMetadata) error {
+func parseBinaryData(reader io.Reader, meta *RawFileMetadata) (map[string][]float64, error) {
 	data := make(map[string][]float64)
 	for _, v := range meta.Variables {
 		data[v.Name] = make([]float64, meta.NoPoints)
@@ -81,7 +93,7 @@ func parseBinaryData(reader io.Reader, meta *RawFileMetadata) error {
 			_, err := io.ReadFull(reader, buff)
 			if err != nil {
 				fmt.Println(err.Error())
-				return err
+				return nil, err
 			}
 			var val float64
 			if v.Size == 4 {
@@ -92,5 +104,5 @@ func parseBinaryData(reader io.Reader, meta *RawFileMetadata) error {
 			data[v.Name][i] = val
 		}
 	}
-	return nil
+	return data, nil
 }
