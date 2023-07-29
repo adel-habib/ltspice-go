@@ -33,7 +33,7 @@ func (rfm RawFileMetadata) String() string {
 
 	builder.WriteString("Variables:\n")
 	for _, v := range rfm.Variables {
-		builder.WriteString(fmt.Sprintf("\t%d\t%s\n", v.Order, v))
+		builder.WriteString(fmt.Sprintf("\t%d\t%v\n", v.Order, v))
 	}
 
 	return builder.String()

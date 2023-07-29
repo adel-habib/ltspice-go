@@ -57,7 +57,7 @@ func readLineUTF16(r io.Reader) (string, error) {
 		}
 		rune := binary.LittleEndian.Uint16(buff)
 		if rune == '\n' {
-			return string(utf16.Decode(lineBuff)), nil
+			return strings.TrimSpace(string(utf16.Decode(lineBuff))), nil
 		}
 
 		lineBuff = append(lineBuff, rune)
