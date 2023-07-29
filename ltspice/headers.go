@@ -120,6 +120,7 @@ func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error 
 		if metadata.NoVariables <= 0 {
 			return ErrInvalidSimulationHeader
 		}
+		metadata.Variables = make([]Variable, metadata.NoVariables)
 		for i := 0; i < metadata.NoVariables; i++ {
 			l, err := readLineUTF16(r)
 			if err != nil {
@@ -134,7 +135,7 @@ func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error 
 				sz = 8
 			}
 			v := Variable{Order: i, Name: fields[1], Typ: fields[2], Size: sz}
-			metadata.Variables = append(metadata.Variables, v)
+			metadata.Variables[i] = v
 		}
 	case HeaderFlags:
 		flagStr := parseLine(line)

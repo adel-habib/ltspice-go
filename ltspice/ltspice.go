@@ -39,14 +39,14 @@ func Parse(fileName string) (*Simulation, error) {
 }
 
 func readLineUTF16(r io.Reader) (string, error) {
-	lineBuff := make([]uint16, 0)
+	lineBuff := make([]uint16, 0, maxLineSize)
+	buff := make([]byte, 2)
 	for {
 		if len(lineBuff) > maxLineSize {
 			return "", ErrLineTooLong
 		}
 
-		var rune uint16
-		err := binary.Read(r, binary.LittleEndian, &rune)
+		_, err := io.ReadFull(r, buff)
 
 		if err != nil {
 			if errors.Is(err, io.EOF) {
@@ -55,7 +55,7 @@ func readLineUTF16(r io.Reader) (string, error) {
 				return "", ErrUnexpectedError
 			}
 		}
-
+		rune := binary.LittleEndian.Uint16(buff)
 		if rune == '\n' {
 			return string(utf16.Decode(lineBuff)), nil
 		}
@@ -87,19 +87,19 @@ func parseBinaryData(reader io.Reader, meta *RawFileMetadata) (map[string][]floa
 	for _, v := range meta.Variables {
 		data[v.Name] = make([]float64, meta.NoPoints)
 	}
+	buff := make([]byte, 16)
 	for i := 0; i < meta.NoPoints; i++ {
 		for _, v := range meta.Variables {
-			buff := make([]byte, v.Size)
-			_, err := io.ReadFull(reader, buff)
+			_, err := io.ReadFull(reader, buff[:v.Size])
 			if err != nil {
 				fmt.Println(err.Error())
 				return nil, err
 			}
 			var val float64
 			if v.Size == 4 {
-				val = toFloatFrom32(buff)
+				val = toFloatFrom32(buff[:v.Size])
 			} else {
-				val = toFloat(buff)
+				val = toFloat(buff[:v.Size])
 			}
 			data[v.Name][i] = val
 		}

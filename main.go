@@ -12,7 +12,7 @@ func main() {
 		panic(err)
 	}
 	for k, v := range sim.Data {
-		fmt.Printf("%s\n%f\n", k, v)
+		fmt.Printf("-%-10s has length of %-3d\n", k, len(v))
 	}
-	//fmt.Println(m)
+
 }
