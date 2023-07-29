@@ -1,24 +1,22 @@
-package main
+package ltspice
 
 import (
 	"testing"
-
-	"github.com/theadell/ltspice-go/ltspice"
 )
 
-var result *ltspice.Simulation
+var result *Simulation
 
 func BenchmarkParse(b *testing.B) {
 
-	var sim *ltspice.Simulation
+	var sim *Simulation
 	var err error
 
-	fileName := "rc.raw"
+	fileName := "testdata/rc.raw"
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		sim, err = ltspice.Parse(fileName)
+		sim, err = Parse(fileName)
 
 		if err != nil {
 			b.Fatalf("failed to parse file: %v", err)
