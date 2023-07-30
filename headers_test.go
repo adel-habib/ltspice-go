@@ -6,178 +6,280 @@ import (
 	"testing"
 	"time"
 	"unicode/utf16"
+
+	"github.com/stretchr/testify/assert"
 )
+
+func TestSimulationType_String(t *testing.T) {
+	tests := []struct {
+		name string
+		s    SimulationType
+		want string
+	}{
+		{
+			name: "Operation Point",
+			s:    OperatingPoint,
+			want: "Operation Point",
+		},
+		{
+			name: "DC transfer characteristic",
+			s:    DCtransfer,
+			want: "DC transfer characteristic",
+		},
+		{
+			name: "AC Analysis",
+			s:    ACAnalysis,
+			want: "AC Analysis",
+		},
+		{
+			name: "Transient Analysis",
+			s:    TransientAnalysis,
+			want: "Transient Analysis",
+		},
+		{
+			name: "Noise Spectral Density",
+			s:    NoiseSpectralDensity,
+			want: "Noise Spectral Density",
+		},
+		{
+			name: "Transfer Function",
+			s:    TransferFunction,
+			want: "Transfer Function",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.s.String()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestSimulationTypeFromString(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		want    SimulationType
+		wantErr error
+	}{
+		{
+			name:  "Operation Point",
+			input: "Operating Point",
+			want:  OperatingPoint,
+		},
+		{
+			name:  "DC transfer characteristic",
+			input: "DC transfer characteristic",
+			want:  DCtransfer,
+		},
+		{
+			name:  "AC Analysis",
+			input: "AC Analysis",
+			want:  ACAnalysis,
+		},
+		{
+			name:  "Transient Analysis",
+			input: "Transient Analysis",
+			want:  TransientAnalysis,
+		},
+		{
+			name:  "Noise Spectral Density",
+			input: "Noise Spectral Density",
+			want:  NoiseSpectralDensity,
+		},
+		{
+			name:  "Transfer Function",
+			input: "Transfer Function",
+			want:  TransferFunction,
+		},
+		{
+			name:    "Invalid",
+			input:   "Invalid",
+			want:    0,
+			wantErr: ErrInvalidSimulationType,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := SimulationTypeFromString(tt.input)
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.wantErr, err)
+		})
+	}
+}
 
 func TestParseHeaders(t *testing.T) {
 	test_1_headers := `Title: * Z:\home\wine\ltspice\Draft1.asc
-					Date: Tue Jul 25 12:15:28 2023
-					Plotname: Transient Analysis
-					Flags: real forward stepped
-					No. Variables: 4
-					No. Points:          142
-					Offset:   0.0000000000000000e+000
-					Command: Linear Technology Corporation LTspice XVII
-					Variables:
-									0   time    time
-									1   V(n001) voltage
-									2   I(R1)   device_current
-									3   I(V1)   device_current
-					Binary: 
+						Date: Tue Jul 25 12:15:28 2023
+						Plotname: Transient Analysis
+						Flags: real forward stepped
+						No. Variables: 4
+						No. Points:          142
+						Offset:   0.0000000000000000e+000
+						Command: Linear Technology Corporation LTspice XVII
+						Variables:
+										0   time    time
+										1   V(n001) voltage
+										2   I(R1)   device_current
+										3   I(V1)   device_current
+						Binary: 
 `
 
 	test_2_headers := `Title: * Z:\home\wine\ltspice\test.asc
-			Date: Sat Jul 29 12:38:42 2023
-			Plotname: Transient Analysis
-			Flags: real forward
-			No. Variables: 17
-			No. Points:          520
-			Offset:   0.0000000000000000e+000
-			Command: Linear Technology Corporation LTspice XVII
-			Backannotation: _in1 1 2
-			Backannotation: _in2 1 2
-			Backannotation: _in3 1 2
-			Backannotation: _in4 1 2
-			Backannotation: _in1 1 2
-			Backannotation: _in2 1 2
-			Backannotation: _in3 1 2
-			Backannotation: _in4 1 2
-			Backannotation: u1 1 2 99 50 45
-			Variables:
-				0	time	time
-				1	V(+v)	voltage
-				2	V(in)	voltage
-				3	V(n001)	voltage
-				4	V(out)	voltage
-				5	V(-v)	voltage
-				6	I(Rload)	device_current
-				7	I(R2)	device_current
-				8	I(R1)	device_current
-				9	I(V2)	device_current
-				10	I(Vin)	device_current
-				11	I(V1)	device_current
-				12	Ix(u1:1)	subckt_current
-				13	Ix(u1:2)	subckt_current
-				14	Ix(u1:99)	subckt_current
-				15	Ix(u1:50)	subckt_current
-				16	Ix(u1:45)	subckt_current
-			Binary:
+						Date: Sat Jul 29 12:38:42 2023
+						Plotname: Transient Analysis
+						Flags: real forward
+						No. Variables: 17
+						No. Points:          520
+						Offset:   0.0000000000000000e+000
+						Command: Linear Technology Corporation LTspice XVII
+						Backannotation: _in1 1 2
+						Backannotation: _in2 1 2
+						Backannotation: _in3 1 2
+						Backannotation: _in4 1 2
+						Backannotation: _in1 1 2
+						Backannotation: _in2 1 2
+						Backannotation: _in3 1 2
+						Backannotation: _in4 1 2
+						Backannotation: u1 1 2 99 50 45
+						Variables:
+							0	time	time
+							1	V(+v)	voltage
+							2	V(in)	voltage
+							3	V(n001)	voltage
+							4	V(out)	voltage
+							5	V(-v)	voltage
+							6	I(Rload)	device_current
+							7	I(R2)	device_current
+							8	I(R1)	device_current
+							9	I(V2)	device_current
+							10	I(Vin)	device_current
+							11	I(V1)	device_current
+							12	Ix(u1:1)	subckt_current
+							13	Ix(u1:2)	subckt_current
+							14	Ix(u1:99)	subckt_current
+							15	Ix(u1:50)	subckt_current
+							16	Ix(u1:45)	subckt_current
+						Binary:
 			`
 
 	test_3_headers := `
-	Title: * Z:\home\wine\ltspice\test_2.asc
-Date: Sat Jul 29 12:52:53 2023
-Plotname: Transient Analysis
-Flags: real forward
-No. Variables: 104
-No. Points:          841
-Offset:   0.0000000000000000e+000
-Command: Linear Technology Corporation LTspice XVII
-Variables:
-	0	time	time
-	1	V(n001)	voltage
-	2	V(3)	voltage
-	3	V(n008)	voltage
-	4	V(2)	voltage
-	5	V(n009)	voltage
-	6	V(n011)	voltage
-	7	V(n010)	voltage
-	8	V(n013)	voltage
-	9	V(n016)	voltage
-	10	V(n018)	voltage
-	11	V(n019)	voltage
-	12	V(7)	voltage
-	13	V(4)	voltage
-	14	V(n002)	voltage
-	15	V(n003)	voltage
-	16	V(n014)	voltage
-	17	V(n020)	voltage
-	18	V(n004)	voltage
-	19	V(n007)	voltage
-	20	V(n015)	voltage
-	21	V(n017)	voltage
-	22	V(n005)	voltage
-	23	V(n012)	voltage
-	24	V(6)	voltage
-	25	V(n006)	voltage
-	26	Ic(Q19)	device_current
-	27	Ib(Q19)	device_current
-	28	Ie(Q19)	device_current
-	29	Ic(Q11)	device_current
-	30	Ib(Q11)	device_current
-	31	Ie(Q11)	device_current
-	32	Ic(Q10)	device_current
-	33	Ib(Q10)	device_current
-	34	Ie(Q10)	device_current
-	35	Ic(Q9)	device_current
-	36	Ib(Q9)	device_current
-	37	Ie(Q9)	device_current
-	38	Ic(Q4)	device_current
-	39	Ib(Q4)	device_current
-	40	Ie(Q4)	device_current
-	41	Ic(Q6)	device_current
-	42	Ib(Q6)	device_current
-	43	Ie(Q6)	device_current
-	44	Ic(Q5)	device_current
-	45	Ib(Q5)	device_current
-	46	Ie(Q5)	device_current
-	47	Ic(Q20)	device_current
-	48	Ib(Q20)	device_current
-	49	Ie(Q20)	device_current
-	50	Ic(Q18)	device_current
-	51	Ib(Q18)	device_current
-	52	Ie(Q18)	device_current
-	53	Ic(Q17)	device_current
-	54	Ib(Q17)	device_current
-	55	Ie(Q17)	device_current
-	56	Ic(Q16)	device_current
-	57	Ib(Q16)	device_current
-	58	Ie(Q16)	device_current
-	59	Ic(Q15)	device_current
-	60	Ib(Q15)	device_current
-	61	Ie(Q15)	device_current
-	62	Ic(Q14)	device_current
-	63	Ib(Q14)	device_current
-	64	Ie(Q14)	device_current
-	65	Ic(Q13)	device_current
-	66	Ib(Q13)	device_current
-	67	Ie(Q13)	device_current
-	68	Ic(Q12)	device_current
-	69	Ib(Q12)	device_current
-	70	Ie(Q12)	device_current
-	71	Ic(Q3)	device_current
-	72	Ib(Q3)	device_current
-	73	Ie(Q3)	device_current
-	74	Ic(Q8)	device_current
-	75	Ib(Q8)	device_current
-	76	Ie(Q8)	device_current
-	77	Ic(Q7)	device_current
-	78	Ib(Q7)	device_current
-	79	Ie(Q7)	device_current
-	80	Ic(Q2)	device_current
-	81	Ib(Q2)	device_current
-	82	Ie(Q2)	device_current
-	83	Ic(Q1)	device_current
-	84	Ib(Q1)	device_current
-	85	Ie(Q1)	device_current
-	86	I(C1)	device_current
-	87	I(R14)	device_current
-	88	I(R13)	device_current
-	89	I(R12)	device_current
-	90	I(R11)	device_current
-	91	I(R10)	device_current
-	92	I(R9)	device_current
-	93	I(R8)	device_current
-	94	I(R7)	device_current
-	95	I(R6)	device_current
-	96	I(R5)	device_current
-	97	I(R4)	device_current
-	98	I(R3)	device_current
-	99	I(R2)	device_current
-	100	I(R1)	device_current
-	101	I(V3)	device_current
-	102	I(V2)	device_current
-	103	I(V1)	device_current
-Binary:
+						Title: * Z:\home\wine\ltspice\test_2.asc
+						Date: Sat Jul 29 12:52:53 2023
+						Plotname: Transient Analysis
+						Flags: real forward
+						No. Variables: 104
+						No. Points:          841
+						Offset:   0.0000000000000000e+000
+						Command: Linear Technology Corporation LTspice XVII
+						Variables:
+							0	time	time
+							1	V(n001)	voltage
+							2	V(3)	voltage
+							3	V(n008)	voltage
+							4	V(2)	voltage
+							5	V(n009)	voltage
+							6	V(n011)	voltage
+							7	V(n010)	voltage
+							8	V(n013)	voltage
+							9	V(n016)	voltage
+							10	V(n018)	voltage
+							11	V(n019)	voltage
+							12	V(7)	voltage
+							13	V(4)	voltage
+							14	V(n002)	voltage
+							15	V(n003)	voltage
+							16	V(n014)	voltage
+							17	V(n020)	voltage
+							18	V(n004)	voltage
+							19	V(n007)	voltage
+							20	V(n015)	voltage
+							21	V(n017)	voltage
+							22	V(n005)	voltage
+							23	V(n012)	voltage
+							24	V(6)	voltage
+							25	V(n006)	voltage
+							26	Ic(Q19)	device_current
+							27	Ib(Q19)	device_current
+							28	Ie(Q19)	device_current
+							29	Ic(Q11)	device_current
+							30	Ib(Q11)	device_current
+							31	Ie(Q11)	device_current
+							32	Ic(Q10)	device_current
+							33	Ib(Q10)	device_current
+							34	Ie(Q10)	device_current
+							35	Ic(Q9)	device_current
+							36	Ib(Q9)	device_current
+							37	Ie(Q9)	device_current
+							38	Ic(Q4)	device_current
+							39	Ib(Q4)	device_current
+							40	Ie(Q4)	device_current
+							41	Ic(Q6)	device_current
+							42	Ib(Q6)	device_current
+							43	Ie(Q6)	device_current
+							44	Ic(Q5)	device_current
+							45	Ib(Q5)	device_current
+							46	Ie(Q5)	device_current
+							47	Ic(Q20)	device_current
+							48	Ib(Q20)	device_current
+							49	Ie(Q20)	device_current
+							50	Ic(Q18)	device_current
+							51	Ib(Q18)	device_current
+							52	Ie(Q18)	device_current
+							53	Ic(Q17)	device_current
+							54	Ib(Q17)	device_current
+							55	Ie(Q17)	device_current
+							56	Ic(Q16)	device_current
+							57	Ib(Q16)	device_current
+							58	Ie(Q16)	device_current
+							59	Ic(Q15)	device_current
+							60	Ib(Q15)	device_current
+							61	Ie(Q15)	device_current
+							62	Ic(Q14)	device_current
+							63	Ib(Q14)	device_current
+							64	Ie(Q14)	device_current
+							65	Ic(Q13)	device_current
+							66	Ib(Q13)	device_current
+							67	Ie(Q13)	device_current
+							68	Ic(Q12)	device_current
+							69	Ib(Q12)	device_current
+							70	Ie(Q12)	device_current
+							71	Ic(Q3)	device_current
+							72	Ib(Q3)	device_current
+							73	Ie(Q3)	device_current
+							74	Ic(Q8)	device_current
+							75	Ib(Q8)	device_current
+							76	Ie(Q8)	device_current
+							77	Ic(Q7)	device_current
+							78	Ib(Q7)	device_current
+							79	Ie(Q7)	device_current
+							80	Ic(Q2)	device_current
+							81	Ib(Q2)	device_current
+							82	Ie(Q2)	device_current
+							83	Ic(Q1)	device_current
+							84	Ib(Q1)	device_current
+							85	Ie(Q1)	device_current
+							86	I(C1)	device_current
+							87	I(R14)	device_current
+							88	I(R13)	device_current
+							89	I(R12)	device_current
+							90	I(R11)	device_current
+							91	I(R10)	device_current
+							92	I(R9)	device_current
+							93	I(R8)	device_current
+							94	I(R7)	device_current
+							95	I(R6)	device_current
+							96	I(R5)	device_current
+							97	I(R4)	device_current
+							98	I(R3)	device_current
+							99	I(R2)	device_current
+							100	I(R1)	device_current
+							101	I(V3)	device_current
+							102	I(V2)	device_current
+							103	I(V1)	device_current
+						Binary:
 `
 	tests := []struct {
 		name     string
@@ -485,25 +587,15 @@ Binary:
 				t.Fatal(err)
 			}
 
-			if tt.expected.Title != got.Title {
-				t.Fatalf("Title mismatch, expected: %s, got: %s", tt.expected.Title, got.Title)
-			}
-
-			if !tt.expected.Date.Equal(got.Date) {
-				t.Fatalf("Date mismatch, expected: %v, got: %v", tt.expected.Date, got.Date)
-			}
-
-			if tt.expected.Flags != got.Flags {
-				t.Fatalf("Flags mismatch, expected: %v, got: %v", tt.expected.Flags, got.Flags)
-			}
-
-			if tt.expected.NoPoints != got.NoPoints {
-				t.Fatalf("Number of points mismatch, expected: %d, got: %d", tt.expected.NoPoints, got.NoPoints)
-			}
-
-			if tt.expected.NoVariables != got.NoVariables {
-				t.Fatalf("Number of variables mismatch, expected: %d, got: %d", tt.expected.NoVariables, got.NoVariables)
-			}
+			assert.Equal(t, tt.expected.Title, got.Title, "Title mismatch")
+			assert.Equal(t, tt.expected.Flags, got.Flags, "Flags mismatch")
+			assert.Equal(t, tt.expected.NoPoints, got.NoPoints, "No. Of Points mismatch")
+			assert.Equal(t, tt.expected.NoVariables, got.NoVariables, "No. of variables mismatch")
+			assert.Equal(t, tt.expected.Command, got.Command, "command mismatch")
+			assert.Equal(t, tt.expected.Offset, got.Offset, "Offset mismatch")
+			assert.Equal(t, tt.expected.SimType, got.SimType, "Simulation type mismatch")
+			assert.ElementsMatch(t, tt.expected.Variables, got.Variables, "Variables mismatch")
+			assert.True(t, tt.expected.Date.Equal(got.Date), "Date mismatch")
 
 		})
 	}

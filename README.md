@@ -41,5 +41,6 @@ Ltspice parser for Go
     - [ ] Provide usage examples
 
 - [ ] Testing and Validation
+    - [x] Unit tests
     - [ ] Test against a variety of LTSpice raw files
     - [ ] Validate correct parsing and writing of binary data

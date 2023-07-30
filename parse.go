@@ -8,8 +8,25 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 	"unicode/utf16"
 )
+
+const maxLineSize = 1024
+const dateHeaderLayout = "Date: Mon Jan 2 15:04:05 2006"
+
+type RawFileMetadata struct {
+	Title        string
+	Date         time.Time
+	SimType      SimulationType
+	Flags        Flags
+	NoVariables  int
+	NoPoints     int
+	Offset       float64
+	Command      string
+	Variables    []Variable
+	BinaryOffset int
+}
 
 type Simulation struct {
 	MetaData *RawFileMetadata
@@ -38,32 +55,6 @@ func Parse(fileName string) (*Simulation, error) {
 	return sim, nil
 }
 
-func readLineUTF16(r io.Reader) (string, error) {
-	lineBuff := make([]uint16, 0, maxLineSize)
-	buff := make([]byte, 2)
-	for {
-		if len(lineBuff) > maxLineSize {
-			return "", ErrLineTooLong
-		}
-
-		_, err := io.ReadFull(r, buff)
-
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				return "", ErrUnexpectedEndOfFile
-			} else {
-				return "", ErrUnexpectedError
-			}
-		}
-		rune := binary.LittleEndian.Uint16(buff)
-		if rune == '\n' {
-			return strings.TrimSpace(string(utf16.Decode(lineBuff))), nil
-		}
-
-		lineBuff = append(lineBuff, rune)
-	}
-}
-
 func parseHeaders(reader io.Reader) (*RawFileMetadata, error) {
 	var metadata = &RawFileMetadata{Flags: None}
 	for {
@@ -73,6 +64,9 @@ func parseHeaders(reader io.Reader) (*RawFileMetadata, error) {
 		}
 		if strings.Contains(strings.ToLower(strings.TrimSpace(line)), HeaderBinary) || strings.Contains(strings.ToLower(strings.TrimSpace(line)), HeaderValues) {
 			break
+		}
+		if line == "" {
+			continue
 		}
 		err = parseHeaderLine(reader, metadata, line)
 		if err != nil {
@@ -105,4 +99,39 @@ func parseBinaryData(reader io.Reader, meta *RawFileMetadata) (map[string][]floa
 		}
 	}
 	return data, nil
+}
+
+func readLineUTF16(r io.Reader) (string, error) {
+	lineBuff := make([]uint16, 0, maxLineSize)
+	buff := make([]byte, 2)
+	for {
+		if len(lineBuff) > maxLineSize {
+			return "", ErrLineTooLong
+		}
+
+		_, err := io.ReadFull(r, buff)
+
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return "", ErrUnexpectedEndOfFile
+			} else {
+				return "", ErrUnexpectedError
+			}
+		}
+		rune := binary.LittleEndian.Uint16(buff)
+		if rune == '\n' {
+			return strings.TrimSpace(string(utf16.Decode(lineBuff))), nil
+		}
+
+		lineBuff = append(lineBuff, rune)
+	}
+}
+
+func extractHeaderValue(line string) string {
+	split := strings.SplitN(line, ":", 2)
+	if len(split) < 2 {
+		return ""
+	}
+
+	return strings.TrimSpace(split[1])
 }

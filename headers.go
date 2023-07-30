@@ -9,9 +9,6 @@ import (
 	"time"
 )
 
-const maxLineSize = 1024 // maximum number of runes in a line
-const dateHeaderLayout = "Date: Mon Jan 2 15:04:05 2006"
-
 const (
 	HeaderBinary          = "binary:"
 	HeaderValues          = "values:"
@@ -24,14 +21,15 @@ const (
 	HeaderOffset          = "Offset"
 	HeaderCommand         = "Command"
 	HeaderVariables       = "Variables"
+	HeaderBackannotation  = "Backannotation"
 )
 
 type SimulationType int
 
 const (
-	OperationPoint SimulationType = iota
+	OperatingPoint SimulationType = iota
 	DCtransfer
-	ACAanalysis
+	ACAnalysis
 	TransientAnalysis
 	NoiseSpectralDensity
 	TransferFunction
@@ -49,11 +47,11 @@ func (s SimulationType) String() string {
 func SimulationTypeFromString(str string) (SimulationType, error) {
 	switch str {
 	case "Operating Point":
-		return OperationPoint, nil
+		return OperatingPoint, nil
 	case "DC transfer characteristic":
 		return DCtransfer, nil
 	case "AC Analysis":
-		return ACAanalysis, nil
+		return ACAnalysis, nil
 	case "Transient Analysis":
 		return TransientAnalysis, nil
 	case "Noise Spectral Density":
@@ -65,15 +63,22 @@ func SimulationTypeFromString(str string) (SimulationType, error) {
 	}
 }
 
+type Variable struct {
+	Order int // the order of the variable as it appears in the binary dataframe
+	Name  string
+	Typ   string // the type of the variable (time, frequency, device_voltage etc..)
+	Size  int    // the size of a signle data point in bytes
+}
+
 func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error {
 	lineType := strings.SplitN(line, ":", 2)[0]
 	switch lineType {
 
 	case HeaderTitle:
-		metadata.Title = parseLine(line)
+		metadata.Title = extractHeaderValue(line)
 
 	case HeaderPlotName:
-		sim := parseLine(line)
+		sim := extractHeaderValue(line)
 		simType, err := SimulationTypeFromString(sim)
 		if err != nil {
 			return ErrInvalidSimulationType
@@ -81,10 +86,10 @@ func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error 
 		metadata.SimType = simType
 
 	case HeaderCommand:
-		metadata.Command = parseLine(line)
+		metadata.Command = extractHeaderValue(line)
 
 	case HeaderOffset:
-		num, err := strconv.ParseFloat(parseLine(line), 64)
+		num, err := strconv.ParseFloat(extractHeaderValue(line), 64)
 		if err != nil {
 			log.Println("Error converting string to float:", err)
 			metadata.Offset = 0
@@ -101,7 +106,7 @@ func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error 
 		}
 
 	case HeaderPoints:
-		num, err := strconv.Atoi(parseLine(line))
+		num, err := strconv.Atoi(extractHeaderValue(line))
 		if err != nil {
 			log.Println("Error converting string to integer:", err)
 			return fmt.Errorf("%w: %s", ErrInvalidSimulationHeader, "failed to parse the number of data points from the header")
@@ -109,7 +114,7 @@ func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error 
 		metadata.NoPoints = num
 
 	case HeaderVariablesNumber:
-		num, err := strconv.Atoi(parseLine(line))
+		num, err := strconv.Atoi(extractHeaderValue(line))
 		if err != nil {
 			log.Println("Error converting string to integer:", err)
 			return fmt.Errorf("%w: %s", ErrInvalidSimulationHeader, "failed to parse the number of variables from the header")
@@ -138,9 +143,10 @@ func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error 
 			metadata.Variables[i] = v
 		}
 	case HeaderFlags:
-		flagStr := parseLine(line)
+		flagStr := extractHeaderValue(line)
 		metadata.Flags = ParseFlags(strings.Fields(flagStr)...)
-
+	case HeaderBackannotation:
+		return nil
 	default:
 		log.Println("Encountered unknown header: " + lineType)
 
