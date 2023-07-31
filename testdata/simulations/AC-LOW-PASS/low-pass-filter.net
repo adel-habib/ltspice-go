@@ -1,0 +1,7 @@
+* Z:\home\ahmed\wine\ltspice\low-pass-filter.asc
+V1 N001 0 AC 1
+R1 N002 N001 1k
+C1 N002 0 1µ
+.ac list 1 10 100
+.backanno
+.end

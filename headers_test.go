@@ -284,12 +284,12 @@ func TestParseHeaders(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
-		expected *RawFileMetadata
+		expected *SimulationMetadata
 	}{
 		{
 			name:  "Test 1",
 			input: test_1_headers,
-			expected: &RawFileMetadata{
+			expected: &SimulationMetadata{
 				Title:       "* Z:\\home\\wine\\ltspice\\Draft1.asc",
 				Date:        time.Date(2023, 7, 25, 12, 15, 28, 0, time.UTC),
 				SimType:     TransientAnalysis,
@@ -330,7 +330,7 @@ func TestParseHeaders(t *testing.T) {
 		{
 			name:  "Test 2",
 			input: test_2_headers,
-			expected: &RawFileMetadata{
+			expected: &SimulationMetadata{
 				Title:       "* Z:\\home\\wine\\ltspice\\test.asc",
 				Date:        time.Date(2023, 7, 29, 12, 38, 42, 0, time.UTC),
 				SimType:     TransientAnalysis,
@@ -449,7 +449,7 @@ func TestParseHeaders(t *testing.T) {
 		{
 			name:  "Test 3",
 			input: test_3_headers,
-			expected: &RawFileMetadata{
+			expected: &SimulationMetadata{
 				Title:       "* Z:\\home\\wine\\ltspice\\test_2.asc",
 				Date:        time.Date(2023, 7, 29, 12, 52, 53, 0, time.UTC),
 				SimType:     TransientAnalysis,

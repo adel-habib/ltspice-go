@@ -24,45 +24,6 @@ const (
 	HeaderBackannotation  = "Backannotation"
 )
 
-type SimulationType int
-
-const (
-	OperatingPoint SimulationType = iota
-	DCtransfer
-	ACAnalysis
-	TransientAnalysis
-	NoiseSpectralDensity
-	TransferFunction
-)
-
-func (s SimulationType) String() string {
-	return [...]string{
-		"Operation Point",
-		"DC transfer characteristic",
-		"AC Analysis", "Transient Analysis",
-		"Noise Spectral Density",
-		"Transfer Function"}[s]
-}
-
-func SimulationTypeFromString(str string) (SimulationType, error) {
-	switch str {
-	case "Operating Point":
-		return OperatingPoint, nil
-	case "DC transfer characteristic":
-		return DCtransfer, nil
-	case "AC Analysis":
-		return ACAnalysis, nil
-	case "Transient Analysis":
-		return TransientAnalysis, nil
-	case "Noise Spectral Density":
-		return NoiseSpectralDensity, nil
-	case "Transfer Function":
-		return TransferFunction, nil
-	default:
-		return 0, ErrInvalidSimulationType
-	}
-}
-
 type Variable struct {
 	Order int // the order of the variable as it appears in the binary dataframe
 	Name  string
@@ -70,7 +31,7 @@ type Variable struct {
 	Size  int    // the size of a signle data point in bytes
 }
 
-func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error {
+func parseHeaderLine(r io.Reader, metadata *SimulationMetadata, line string) error {
 	lineType := strings.SplitN(line, ":", 2)[0]
 	switch lineType {
 
@@ -135,7 +96,7 @@ func parseHeaderLine(r io.Reader, metadata *RawFileMetadata, line string) error 
 			if len(fields) < 3 {
 				return fmt.Errorf("%w: failed to parse variable, expected 3 fields but found %d, line: %s", ErrInvalidSimulationHeader, len(fields), l)
 			}
-			sz := 4
+			sz := 16
 			if fields[2] == "time" || i == 0 {
 				sz = 8
 			}
