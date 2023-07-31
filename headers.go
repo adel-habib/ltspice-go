@@ -24,6 +24,12 @@ const (
 	HeaderBackannotation  = "Backannotation"
 )
 
+const (
+	realYAxisTraceByteSize = 4
+	realXAxisTraceByteSize = 8
+	complexTraceByteSize   = 16
+)
+
 type Variable struct {
 	Order int // the order of the variable as it appears in the binary dataframe
 	Name  string
@@ -96,9 +102,9 @@ func parseHeaderLine(r io.Reader, metadata *SimulationMetadata, line string) err
 			if len(fields) < 3 {
 				return fmt.Errorf("%w: failed to parse variable, expected 3 fields but found %d, line: %s", ErrInvalidSimulationHeader, len(fields), l)
 			}
-			sz := 16
+			sz := realYAxisTraceByteSize
 			if fields[2] == "time" || i == 0 {
-				sz = 8
+				sz = realXAxisTraceByteSize
 			}
 			v := Variable{Order: i, Name: fields[1], Typ: fields[2], Size: sz}
 			metadata.Variables[i] = v
