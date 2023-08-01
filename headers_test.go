@@ -298,7 +298,7 @@ func TestParseHeaders(t *testing.T) {
 				NoPoints:    142,
 				Offset:      0,
 				Command:     "Linear Technology Corporation LTspice XVII",
-				Variables: []Variable{
+				Traces: []Trace{
 					{
 						Order: 0,
 						Name:  "time",
@@ -339,7 +339,7 @@ func TestParseHeaders(t *testing.T) {
 				NoPoints:    520,
 				Offset:      0,
 				Command:     "Linear Technology Corporation LTspice XVII",
-				Variables: []Variable{
+				Traces: []Trace{
 					{
 						Order: 0,
 						Name:  "time",
@@ -458,7 +458,7 @@ func TestParseHeaders(t *testing.T) {
 				NoPoints:    841,
 				Offset:      0,
 				Command:     "Linear Technology Corporation LTspice XVII",
-				Variables: []Variable{
+				Traces: []Trace{
 					{Order: 0, Name: "time", Typ: "time", Size: 8},
 					{Order: 1, Name: "V(n001)", Typ: "voltage", Size: 4},
 					{Order: 2, Name: "V(3)", Typ: "voltage", Size: 4},
@@ -594,7 +594,7 @@ func TestParseHeaders(t *testing.T) {
 			assert.Equal(t, tt.expected.Command, got.Command, "command mismatch")
 			assert.Equal(t, tt.expected.Offset, got.Offset, "Offset mismatch")
 			assert.Equal(t, tt.expected.SimType, got.SimType, "Simulation type mismatch")
-			assert.ElementsMatch(t, tt.expected.Variables, got.Variables, "Variables mismatch")
+			assert.ElementsMatch(t, tt.expected.Traces, got.Traces, "Variables mismatch")
 			assert.True(t, tt.expected.Date.Equal(got.Date), "Date mismatch")
 
 		})

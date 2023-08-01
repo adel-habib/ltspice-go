@@ -30,7 +30,7 @@ const (
 	complexTraceByteSize   = 16
 )
 
-type Variable struct {
+type Trace struct {
 	Order int // the order of the variable as it appears in the binary dataframe
 	Name  string
 	Typ   string // the type of the variable (time, frequency, device_voltage etc..)
@@ -92,7 +92,7 @@ func parseHeaderLine(r io.Reader, metadata *SimulationMetadata, line string) err
 		if metadata.NoVariables <= 0 {
 			return ErrInvalidSimulationHeader
 		}
-		metadata.Variables = make([]Variable, metadata.NoVariables)
+		metadata.Traces = make([]Trace, metadata.NoVariables)
 		for i := 0; i < metadata.NoVariables; i++ {
 			l, err := readLineUTF16(r)
 			if err != nil {
@@ -106,8 +106,8 @@ func parseHeaderLine(r io.Reader, metadata *SimulationMetadata, line string) err
 			if fields[2] == "time" || i == 0 {
 				sz = realXAxisTraceByteSize
 			}
-			v := Variable{Order: i, Name: fields[1], Typ: fields[2], Size: sz}
-			metadata.Variables[i] = v
+			v := Trace{Order: i, Name: fields[1], Typ: fields[2], Size: sz}
+			metadata.Traces[i] = v
 		}
 	case HeaderFlags:
 		flagStr := extractHeaderValue(line)
