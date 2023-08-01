@@ -34,6 +34,8 @@ func SimulationTypeFromString(str string) (SimulationType, error) {
 		return TransientAnalysis, nil
 	case "Noise Spectral Density":
 		return NoiseSpectralDensity, nil
+	case "Noise Spectral Density - (V/Hz½ or A/Hz½)":
+		return NoiseSpectralDensity, nil
 	case "Transfer Function":
 		return TransferFunction, nil
 	default:
