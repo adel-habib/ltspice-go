@@ -70,12 +70,12 @@ func parseHeaders(reader io.Reader) (*SimulationMetadata, error) {
 
 func parseBinaryData(reader io.Reader, meta *SimulationMetadata) (map[string][]float64, error) {
 	data := make(map[string][]float64)
-	for _, v := range meta.Variables {
+	for _, v := range meta.Traces {
 		data[v.Name] = make([]float64, meta.NoPoints)
 	}
 	buff := make([]byte, 16)
 	for i := 0; i < meta.NoPoints; i++ {
-		for _, v := range meta.Variables {
+		for _, v := range meta.Traces {
 			_, err := io.ReadFull(reader, buff[:v.Size])
 			if err != nil {
 				fmt.Println(err.Error())
@@ -95,12 +95,12 @@ func parseBinaryData(reader io.Reader, meta *SimulationMetadata) (map[string][]f
 
 func parseBinaryComplex(reader io.Reader, meta *SimulationMetadata) (map[string][]complex128, error) {
 	data := make(map[string][]complex128)
-	for _, v := range meta.Variables {
+	for _, v := range meta.Traces {
 		data[v.Name] = make([]complex128, meta.NoPoints)
 	}
 	buff := make([]byte, 16)
 	for i := 0; i < meta.NoPoints; i++ {
-		for _, v := range meta.Variables {
+		for _, v := range meta.Traces {
 			_, err := io.ReadFull(reader, buff[:16])
 			if err != nil {
 				fmt.Println(err.Error())

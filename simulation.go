@@ -50,7 +50,7 @@ type SimulationMetadata struct {
 	NoPoints     int
 	Offset       float64
 	Command      string
-	Variables    []Variable
+	Traces       []Trace
 	BinaryOffset int
 }
 
@@ -72,12 +72,12 @@ func (sim *Simulation) GetNumberOfVariables() int {
 	return sim.metaData.NoVariables
 }
 
-func (sim *Simulation) GetVariables() []Variable {
-	return sim.metaData.Variables
+func (sim *Simulation) GetVariables() []Trace {
+	return sim.metaData.Traces
 }
 func (sim *Simulation) GetVariableNames() []string {
 	names := make([]string, sim.metaData.NoVariables)
-	for i, v := range sim.metaData.Variables {
+	for i, v := range sim.metaData.Traces {
 		names[i] = v.Name
 	}
 	return names
