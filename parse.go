@@ -216,7 +216,6 @@ func detectSteps(xAxis []float64) (*steps, error) {
 		return nil, ErrParseStepInfo
 	}
 
-	steps := 0
 	origin := xAxis[0]
 	for idx, point := range xAxis {
 		if math.Abs(float64(point-origin)) < 1e-10 {
@@ -225,7 +224,7 @@ func detectSteps(xAxis []float64) (*steps, error) {
 		}
 	}
 
-	if steps == 0 {
+	if s.count == 0 {
 		slog.Error("failed to detect steps or find a pattern in x-axis data")
 		return nil, ErrParseStepInfo
 	}
