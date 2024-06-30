@@ -10,18 +10,18 @@ import (
 )
 
 const (
-	HeaderBinary          = "binary:"
-	HeaderValues          = "values:"
-	HeaderTitle           = "Title"
-	HeaderDate            = "Date"
-	HeaderPlotName        = "Plotname"
-	HeaderFlags           = "Flags"
-	HeaderVariablesNumber = "No. Variables"
-	HeaderPoints          = "No. Points"
-	HeaderOffset          = "Offset"
-	HeaderCommand         = "Command"
-	HeaderVariables       = "Variables"
-	HeaderBackannotation  = "Backannotation"
+	headerBinary          = "binary:"
+	headerValues          = "values:"
+	headerTitle           = "Title"
+	headerDate            = "Date"
+	headerPlotName        = "Plotname"
+	headerFlags           = "Flags"
+	headerVariablesNumber = "No. Variables"
+	headerPoints          = "No. Points"
+	headerOffset          = "Offset"
+	headerCommand         = "Command"
+	headerVariables       = "Variables"
+	headerBackannotation  = "Backannotation"
 )
 
 const (
@@ -30,32 +30,32 @@ const (
 	complexTraceByteSize   = 16
 )
 
-type Trace struct {
-	Order int // the order of the variable as it appears in the binary dataframe
+type Variable struct {
+	order int // the order of the variable as it appears in the binary dataframe
 	Name  string
 	Typ   string // the type of the variable (time, frequency, device_voltage etc..)
-	Size  int    // the size of a signle data point in bytes
+	size  int    // the size of a signle data point in bytes
 }
 
-func parseHeaderLine(r io.Reader, metadata *SimulationMetadata, line string) error {
+func parseHeaderLine(r io.Reader, metadata *MetaData, line string) error {
 	lineType := strings.SplitN(line, ":", 2)[0]
 	switch lineType {
 
-	case HeaderTitle:
+	case headerTitle:
 		metadata.Title = extractHeaderValue(line)
 
-	case HeaderPlotName:
+	case headerPlotName:
 		sim := extractHeaderValue(line)
-		simType, err := SimulationTypeFromString(sim)
+		simType, err := simTypeFromString(sim)
 		if err != nil {
 			return ErrInvalidSimulationType
 		}
 		metadata.SimType = simType
 
-	case HeaderCommand:
+	case headerCommand:
 		metadata.Command = extractHeaderValue(line)
 
-	case HeaderOffset:
+	case headerOffset:
 		num, err := strconv.ParseFloat(extractHeaderValue(line), 64)
 		if err != nil {
 			log.Println("Error converting string to float:", err)
@@ -64,7 +64,7 @@ func parseHeaderLine(r io.Reader, metadata *SimulationMetadata, line string) err
 			metadata.Offset = num
 		}
 
-	case HeaderDate:
+	case headerDate:
 		t, err := time.Parse(dateHeaderLayout, line)
 		if err != nil {
 			log.Println("Error parsing date:", err)
@@ -72,7 +72,7 @@ func parseHeaderLine(r io.Reader, metadata *SimulationMetadata, line string) err
 			metadata.Date = t
 		}
 
-	case HeaderPoints:
+	case headerPoints:
 		num, err := strconv.Atoi(extractHeaderValue(line))
 		if err != nil {
 			log.Println("Error converting string to integer:", err)
@@ -80,7 +80,7 @@ func parseHeaderLine(r io.Reader, metadata *SimulationMetadata, line string) err
 		}
 		metadata.NoPoints = num
 
-	case HeaderVariablesNumber:
+	case headerVariablesNumber:
 		num, err := strconv.Atoi(extractHeaderValue(line))
 		if err != nil {
 			log.Println("Error converting string to integer:", err)
@@ -88,11 +88,11 @@ func parseHeaderLine(r io.Reader, metadata *SimulationMetadata, line string) err
 		}
 		metadata.NoVariables = num
 
-	case HeaderVariables:
+	case headerVariables:
 		if metadata.NoVariables <= 0 {
 			return ErrInvalidSimulationHeader
 		}
-		metadata.Traces = make([]Trace, metadata.NoVariables)
+		metadata.Variables = make([]Variable, metadata.NoVariables)
 		for i := 0; i < metadata.NoVariables; i++ {
 			l, err := readLineUTF16(r)
 			if err != nil {
@@ -106,13 +106,13 @@ func parseHeaderLine(r io.Reader, metadata *SimulationMetadata, line string) err
 			if fields[2] == "time" || i == 0 {
 				sz = realXAxisTraceByteSize
 			}
-			v := Trace{Order: i, Name: fields[1], Typ: fields[2], Size: sz}
-			metadata.Traces[i] = v
+			v := Variable{order: i, Name: fields[1], Typ: fields[2], size: sz}
+			metadata.Variables[i] = v
 		}
-	case HeaderFlags:
+	case headerFlags:
 		flagStr := extractHeaderValue(line)
-		metadata.Flags = ParseFlags(strings.Fields(flagStr)...)
-	case HeaderBackannotation:
+		metadata.Flags = parseFlags(strings.Fields(flagStr)...)
+	case headerBackannotation:
 		return nil
 	default:
 		log.Println("Encountered unknown header: " + lineType)

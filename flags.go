@@ -25,7 +25,7 @@ var flagLookup = map[string]Flags{
 	"fastaccess": FastAccess,
 }
 
-func ParseFlags(flagStrings ...string) Flags {
+func parseFlags(flagStrings ...string) Flags {
 	var result Flags
 	for _, flagString := range flagStrings {
 		flag, ok := flagLookup[strings.ToLower(flagString)]
@@ -33,20 +33,20 @@ func ParseFlags(flagStrings ...string) Flags {
 			log.Printf("Unknown flag: %s", flagString)
 			continue
 		}
-		result.SetFlag(flag)
+		result.setFlag(flag)
 	}
 	return result
 }
 
-func (f Flags) HasFlag(flag Flags) bool {
+func (f Flags) hasFlag(flag Flags) bool {
 	return f&flag != 0
 }
 
-func (f *Flags) SetFlag(flag Flags) {
+func (f *Flags) setFlag(flag Flags) {
 	*f |= flag
 }
 
-func (f *Flags) ClearFlag(flag Flags) {
+func (f *Flags) clearFlag(flag Flags) {
 	*f &^= flag
 }
 

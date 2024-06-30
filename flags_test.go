@@ -37,7 +37,7 @@ func TestFlags(t *testing.T) {
 
 		for _, tc := range tests {
 			t.Run(tc.name, func(t *testing.T) {
-				got := ParseFlags(tc.input...)
+				got := parseFlags(tc.input...)
 				assert.Equal(t, tc.want, got)
 			})
 		}
@@ -45,10 +45,10 @@ func TestFlags(t *testing.T) {
 
 	t.Run("Set and Clear Flags", func(t *testing.T) {
 		f := None
-		f.SetFlag(Complex)
-		assert.True(t, f.HasFlag(Complex))
-		f.ClearFlag(Complex)
-		assert.False(t, f.HasFlag(Complex))
+		f.setFlag(Complex)
+		assert.True(t, f.hasFlag(Complex))
+		f.clearFlag(Complex)
+		assert.False(t, f.hasFlag(Complex))
 	})
 
 	t.Run("String", func(t *testing.T) {

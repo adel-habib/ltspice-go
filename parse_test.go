@@ -117,7 +117,7 @@ func TestParsingAcSimulation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	gotCmplx := s.ComplexData
+	gotCmplx := s.complexData
 	gotAbs := make(map[string][]float64)
 	gotReal := make(map[string][]float64)
 	gotImag := make(map[string][]float64)
@@ -167,7 +167,7 @@ func TestTransientSimulation(t *testing.T) {
 		t.Fatal(err)
 	}
 	for k, expected := range resultSet {
-		got, ok := s.Data[k]
+		got, ok := s.data[k]
 		if !ok {
 			t.Fatalf("Variable %s exists in expected result set but in parsed set", k)
 		}
@@ -188,7 +188,7 @@ func TestParsingNoiseSpectralSimulation(t *testing.T) {
 		t.Fatal(err)
 	}
 	for k, expected := range resultSet {
-		got, ok := s.Data[k]
+		got, ok := s.data[k]
 		if !ok {
 			t.Fatalf("Variable %s exists in expected result set but in parsed set", k)
 		}
@@ -209,14 +209,20 @@ func TestParsingDcSweepSimulation(t *testing.T) {
 		t.Fatal(err)
 	}
 	for k, expected := range resultSet {
-		got, ok := s.Data[k]
+		got, ok := s.data[k]
 		if !ok {
 			t.Fatalf("Variable %s exists in expected result set but in parsed set", k)
 		}
 		assert.InDeltaSlice(t, expected, got, 1e-6)
 	}
 }
-
+func TestPParsingOPSim(t *testing.T) {
+	filePath := "testdata/simulations/stepped/rc/rc.raw"
+	_, err := Parse(filePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
 func csvToMap(filename string) (map[string][]float64, error) {
 	file, err := os.Open(filename)
 	if err != nil {
