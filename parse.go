@@ -36,6 +36,12 @@ func Parse(fileName string) (*SimData, error) {
 	defer file.Close()
 
 	reader := bufio.NewReader(file)
+	return ParseFromReader(reader)
+}
+
+// ParseFromReader parses LTSpice raw data file from the provided io.Reader.
+// It returns the parsed simulation data as a SimData object, or a non-nil error if an error occurs.
+func ParseFromReader(reader io.Reader) (*SimData, error) {
 	meta, err := parseHeaders(reader)
 	if err != nil {
 		return nil, err
