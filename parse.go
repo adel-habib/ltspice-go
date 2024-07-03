@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"io"
 	"log/slog"
 	"math"
@@ -77,8 +76,8 @@ func ParseFromReader(reader io.Reader) (*SimData, error) {
 		sim.complexData = data
 	}
 	steps := &steps{
-		count:   meta.NoPoints,
-		offsets: make([]int, 0),
+		count:   1,
+		offsets: []int{0},
 	}
 	sim.stepPoints = sim.Meta.NoPoints
 	if sim.Meta.Flags.hasFlag(Stepped) {
@@ -99,8 +98,8 @@ func ParseFromReader(reader io.Reader) (*SimData, error) {
 				return nil, err
 			}
 		}
-		sim.steps = steps
 	}
+	sim.steps = steps
 	return sim, nil
 
 }
@@ -136,7 +135,6 @@ func parseBinaryData(reader io.Reader, meta *MetaData) (map[string][]float64, er
 		for _, v := range meta.Variables {
 			_, err := io.ReadFull(reader, buff[:v.size])
 			if err != nil {
-				fmt.Println(err.Error())
 				return nil, err
 			}
 			var val float64
@@ -161,7 +159,6 @@ func parseBinaryComplex(reader io.Reader, meta *MetaData) (map[string][]complex1
 		for _, v := range meta.Variables {
 			_, err := io.ReadFull(reader, buff[:16])
 			if err != nil {
-				fmt.Println(err.Error())
 				return nil, err
 			}
 			var real float64
